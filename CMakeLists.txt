@@ -6,7 +6,7 @@
 
 cmake_minimum_required(VERSION 3.31)
 
-project(zerosub VERSION 0.18.8 LANGUAGES C CXX)
+project(zerosub VERSION 0.18.17 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -67,6 +67,28 @@ if(NOT lvgl_POPULATED)
     endif()
 endif()
 add_subdirectory("${lvgl_SOURCE_DIR}" "${lvgl_BINARY_DIR}" EXCLUDE_FROM_ALL)
+
+# cpp-httplib - single-header HTTP server behind the Web Files page.
+# Only the header is used, so its own CMake project (and its OpenSSL/zlib
+# lookups) is not added.
+FetchContent_Declare(
+    httplib
+    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+    GIT_TAG        v0.62.0
+    GIT_SHALLOW    TRUE
+)
+FetchContent_GetProperties(httplib)
+if(NOT httplib_POPULATED)
+    if(POLICY CMP0169)
+        cmake_policy(PUSH)
+        cmake_policy(SET CMP0169 OLD)
+    endif()
+    FetchContent_Populate(httplib)
+    if(POLICY CMP0169)
+        cmake_policy(POP)
+    endif()
+endif()
+set(HTTPLIB_INCLUDE_DIR "${httplib_SOURCE_DIR}")
 set(LVGL_SOURCE_DIR "${lvgl_SOURCE_DIR}")
 get_filename_component(LVGL_INCLUDE_PARENT "${LVGL_SOURCE_DIR}" DIRECTORY)
 
@@ -413,6 +435,12 @@ target_include_directories(${PROJECT_NAME}_platform
     PUBLIC
         ${LVGL_INCLUDE_DIR}
         "${CMAKE_CURRENT_SOURCE_DIR}/src/platform"
+)
+
+# Only web_server.cpp includes httplib.h; keep its warnings out of ours.
+target_include_directories(${PROJECT_NAME}_platform
+    SYSTEM PRIVATE
+        "${HTTPLIB_INCLUDE_DIR}"
 )
 
 target_compile_definitions(${PROJECT_NAME}_platform

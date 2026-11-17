@@ -18,6 +18,7 @@
 #include "read_screen.h"
 #include "saved_screen.h"
 #include "signal_meter_screen.h"
+#include "web_screen.h"
 
 namespace app {
 namespace {
@@ -107,6 +108,9 @@ void ScreenManager::show_page(model::AppPage page) {
         case model::AppPage::ImuCompass:
         case model::AppPage::ImuLevel:
             next_screen = std::make_unique<screen::ImuScreen>(view_model_, assets_, page);
+            break;
+        case model::AppPage::WebFiles:
+            next_screen = std::make_unique<screen::WebScreen>(view_model_, assets_);
             break;
         case model::AppPage::Menu:
         case model::AppPage::SubGhzMenu:

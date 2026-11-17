@@ -23,7 +23,10 @@ struct NavHint {
     const char* action;
 };
 
-/* Bottom bar listing the keys the current page reacts to. It is display-only. */
+/*
+ * Bottom bar listing every key the current page reacts to. It is display-only.
+ * When the hints do not fit on one line they wrap onto two lines in a smaller font.
+ */
 class NavBar : public BaseWidgets {
 public:
     NavBar(lv_obj_t* parent,
@@ -32,8 +35,11 @@ public:
            std::vector<NavHint> hints);
 
     void build() override;
+    /* Replaces the hints, for pages whose keys change with their state. */
+    void set_hints(std::vector<NavHint> hints);
 
 private:
+    void populate();
     void apply_theme();
     static void theme_observer_cb(lv_observer_t* observer, lv_subject_t* subject);
 

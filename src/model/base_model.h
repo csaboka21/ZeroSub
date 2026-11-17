@@ -58,6 +58,8 @@ enum class AppPage {
     ImuCompass        = 24,
     /* A bubble level from the accelerometer. */
     ImuLevel          = 25,
+    /* Serves the home folder to a browser: browse, download, upload. */
+    WebFiles          = 26,
 };
 
 /* Where a Read RAW session stands. */
@@ -76,10 +78,11 @@ enum class MainMenuItem {
     Infrared,
     Nfc,
     Imu,
+    WebFiles,
     DarkMode,
 };
 
-constexpr std::size_t kMainMenuItemCount = 5;
+constexpr std::size_t kMainMenuItemCount = 6;
 
 /* Rows of the Sub-GHz menu, in display order. */
 enum class SubGhzMenuItem {

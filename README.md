@@ -1,19 +1,7 @@
 <p align="center">
-  <picture>
-    <source
-      media="(prefers-color-scheme: dark)"
-      srcset="./screenshot/app-simulator-dark-darwin.png"
-    />
-    <source
-      media="(prefers-color-scheme: light)"
-      srcset="./screenshot/app-simulator-light-darwin.png"
-    />
-  <img
-    src="./screenshot/app-simulator-light-darwin.png"
-    alt="ZeroSub running in the desktop simulator"
-    width="315"
-  />
-  </picture>
+  <img src="./screenshot/main-menu.png" alt="ZeroSub main menu: Sub-GHz, Infrared, NFC, IMU, Web Files and Dark mode" width="320" />
+  <img src="./screenshot/signal-meter.png" alt="Signal Meter at 433.92 MHz, AM650, showing the RSSI bar" width="320" />
+  <img src="./screenshot/nfc-tag.png" alt="A saved NTAG215 on the Tag page, emulating and waiting for a reader" width="320" />
 </p>
 
 <div align="center">
@@ -21,7 +9,7 @@
 </div>
 
 <div align="center">
-  <p>A Sub-GHz radio, infrared remote and NFC tool for the CardputerZero and the M5Stack Cap CC1101, built with LVGL and CMake.</p>
+  <p>A Sub-GHz radio, infrared remote, NFC and motion sensor tool for the CardputerZero and the M5Stack Cap CC1101, built with LVGL and CMake.</p>
 </div>
 
 <p align="center" style="margin: 20px 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 12px;">
@@ -54,7 +42,7 @@ In this example project, we used small MVVM-style structure around LVGL:
 
 Pages, modelled on the Flipper Zero Sub-GHz app's feature set:
 
-- **Main menu**: one row per tool, then settings. Today that is **Sub-GHz**, **Infrared**, **NFC** and the dark mode toggle; new tools get a row of their own here.
+- **Main menu**: one row per tool, then settings. Today that is **Sub-GHz**, **Infrared**, **NFC**, **IMU**, **Web Files** and the dark mode toggle; new tools get a row of their own here.
 - **Sub-GHz menu**: one row per Sub-GHz page, listed below.
 - **Frequency Analyzer**: sweeps 17 common Sub-GHz channels between 300 and 925 MHz, shows the strongest one and a level bar per channel.
 - **Signal Meter**: live RSSI on one frequency, with a selectable modulation preset.
@@ -71,6 +59,11 @@ Pages, modelled on the Flipper Zero Sub-GHz app's feature set:
 - **Read Tag**: waits for an NFC-A, FeliCa, NFC-B (ISO 14443-B, ST25TB) or NFC-V (ISO 15693) tag on the Cap's ST25R3916 reader, reads it, shows the URL or text it holds, and saves it as a Flipper-compatible `.nfc` file.
 - **Saved Tags**: browses the tag library, folders included.
 - **Tag**: one saved tag; emulates it, or writes it to another tag.
+- **IMU menu**: one row per IMU page, listed below. See [IMU](#imu).
+- **Motion**: live acceleration, rotation and magnetic field from the BMI270 and BMM150, with pitch, roll and temperature.
+- **Compass**: a heading dial from the BMM150, after a short calibration.
+- **Level**: a bubble level with pitch and roll, and a level point you can set.
+- **Web Files**: serves the home folder to a browser on the same network while the page is open, behind a PIN shown on the device. See [Web Files](#web-files).
 - **125 kHz RFID menu**: Read, Saved, Add Manually and Key, for EM4100 keys on a home-made coil front-end.
   Hidden for now: the main menu has no row for it, though the code is still built. See [125 kHz RFID](#125-khz-rfid).
 
@@ -83,7 +76,7 @@ Pages, modelled on the Flipper Zero Sub-GHz app's feature set:
 │   ├── audio/              # Audio resources
 │   ├── fonts/              # TTF fonts loaded through FreeType
 │   └── images/             # Image resources
-├── screenshot/             # Simulator screenshots for supported desktop platforms
+├── screenshot/             # Device screenshots (README and store listing) and simulator captures
 ├── src/
 │   ├── app/                # Application lifecycle, asset loading, screen management
 │   ├── config/             # LVGL config headers for desktop and device builds
@@ -135,6 +128,9 @@ Pages, modelled on the Flipper Zero Sub-GHz app's feature set:
 - `src/model/nfc/amiibo.*`: amiibo data on an NTAG215: checking it against the owner's retail key and re-signing it for a new UID (amiitool layout, built-in AES-128 and HMAC-SHA256).
 - `src/viewmodel/base_viewmodel_nfc.cpp`: the NFC tool's state and actions.
 - `src/view/screens/nfc_screen.*`: the three NFC pages.
+- `src/platform/imu_sensors.*`, `bmi270_config.*`, `i2c_device.*`: BMI270 and BMM150 drivers on i2c-dev, and the BMI270's config blob.
+- `src/platform/imu_worker.*`: the thread that finds the chips (or their IIO devices) and reads them.
+- `src/viewmodel/base_viewmodel_imu.cpp`, `src/view/screens/imu_screen.*`: the IMU tool's state, calibration and pages.
 - `src/model/rfid/em4100.*`: the EM4100 frame (header, row and column parity), its Manchester half-bits, and the decoder that turns reader pulses back into IDs.
 - `src/platform/rfid_store.*`: the key library and the Flipper `.rfid` file reader and writer.
 - `src/platform/rfid_emulator.*`: the real-time thread that plays a key on the coil front-end's GPIOs.
@@ -177,6 +173,10 @@ from the navigation bar (keyboard shortcut `6`) writes a per-user override to
 when `XDG_CONFIG_HOME` is not set. The per-user file takes precedence on the next launch.
 
 ## CC1101 Radio
+
+<p align="center">
+  <img src="./screenshot/signal-meter.png" alt="Signal Meter at 433.92 MHz, AM650, RSSI -102 dBm" width="320" />
+</p>
 
 ZeroSub talks to the CC1101 on the M5Stack Cap CC1101 through a Linux spidev node. The driver lives in
 `src/platform/cc1101.*` on top of the generic `src/platform/spi_device.*` wrapper.
@@ -616,8 +616,9 @@ Known limitations:
 ## NFC
 
 The Cap CC1101 carries a second radio next to the CC1101: an ST25R3916 13.56 MHz NFC transceiver with
-its own antenna. The NFC tool reads NFC-A tags with it, saves them as Flipper Zero `.nfc` files, writes
-saved NTAG / Ultralight tags to other tags, and emulates saved tags to a reader. It is modelled on the
+its own antenna. The NFC tool reads NFC-A, FeliCa (NFC-F), NFC-B and NFC-V tags with it, saves them as
+Flipper Zero `.nfc` files, writes saved NTAG / Ultralight tags to other tags, and emulates saved NFC-A
+tags to a reader. It is modelled on the
 Flipper Zero NFC app and uses its file format, so tags can be copied between the two.
 
 > [!IMPORTANT]
@@ -665,9 +666,15 @@ card is found).
 | --- | --- | --- | --- |
 | NTAG210, 212, 213, 215, 216 | Full memory, version, signature | User memory | Full tag |
 | MIFARE Ultralight, Ultralight EV1 (11, 21), NTAG203 | Full memory | User memory | Full tag |
+| MIFARE Ultralight C | Full memory with a default key, else the open pages | User memory | Full tag, with 3DES authentication when the key was read |
 | Other NTAG / Ultralight types | Memory, sized by probing | User memory | Full tag |
-| MIFARE Classic, DESFire, bank cards and other NFC-A cards | UID, ATQA, SAK only | No | UID only |
-| NFC-B, NFC-F (FeliCa), NFC-V | No | No | No |
+| DESFire, MIFARE Plus, bank and ID cards (ISO 14443-4A) | UID, ATQA, SAK, ATS | No | UID, SAK and ATS |
+| MIFARE Classic and other NFC-A cards | UID, ATQA, SAK only | No | UID only |
+| FeliCa Lite / Lite-S | All 28 blocks | No | Not yet |
+| FeliCa Standard | Systems, services, and the blocks of public services | No | Not yet |
+| ISO 14443-3B cards | PUPI, application data, protocol info | No | No (the chip has no NFC-B card mode) |
+| ST25TB / SRIX (SRI512, SRT512, SRIX512, SRI2K, SRI4K, SRIX4K) | UID, every block, system block | No | No |
+| NFC-V / ISO 15693 (ICODE SLI / SLIX / SLIX2, Tag-it, ST) | System information, every block with its lock | No | No (the chip has no NFC-V card mode) |
 
 - Only one tag may be in the field. With several, the page asks you to present one; the app does not
   sort out tags that answer at the same time.
@@ -762,10 +769,14 @@ like, and they show up here.
   returns to the NFC menu.
 - `8` asks for confirmation and a second `8` deletes the selected file permanently.
 - Flipper files of format versions 2 to 4 open. Of a file that is not an NTAG / Ultralight (a MIFARE
-  Classic dump, for example) only UID, ATQA and SAK are used. Files of cards that are not NFC-A are
-  listed but cannot be opened.
+  Classic dump, for example) only UID, ATQA and SAK are used. Flipper `FeliCa`, `ISO14443-3B`,
+  `ST25TB`, `ISO15693-3` and `SLIX` files open as well, to be viewed.
 
 ### Tag
+
+<p align="center">
+  <img src="./screenshot/nfc-tag.png" alt="A saved NTAG215 on the Tag page, emulating and waiting for a reader" width="320" />
+</p>
 
 One saved tag: the same lines as Read Tag, scrolled with `F` / `X`, and two actions. `ESC` stops
 whichever is running; a second `ESC` goes back to the list.
@@ -828,8 +839,101 @@ the file's own UID. A running emulation restarts with the new identity.
 Known limitations:
 
 - No editing or creating of tags on the device, and no renaming of saved files.
+- Only NFC-A tags can be emulated. FeliCa emulation is not written yet; the ST25R3916 has no card mode
+  for NFC-B or NFC-V, so those tags are read and saved only. Only NTAG / Ultralight tags can be written.
 - Writing a tag cannot change its UID, so a copy has the data of the original but its own UID. Emulation
   uses the saved UID.
+
+## IMU
+
+The IMU tool shows what the motion sensors measure: a Bosch **BMI270** accelerometer and gyroscope and a
+Bosch **BMM150** magnetometer, both on I2C. It has three pages, each ending with a status line saying
+where the chips were found and a message line.
+
+- **Finding the chips.** The BMI270 is looked for at `0x68` and `0x69` on the bus set in the config, or
+  on every `/dev/i2c-*` bus when none is set. The BMM150 is looked for behind the BMI270's auxiliary
+  interface first, then at `0x10`-`0x13` on the BMI270's bus only, so chips on other buses are never
+  written to. With no I2C bus at all the page says to enable I2C in `config.txt`.
+- **Kernel drivers.** If a kernel driver already owns a chip, the app leaves the chip alone and reads
+  its IIO values from sysfs instead.
+- **Set-up.** Without a kernel driver the app resets the BMI270 and uploads its 8 KB config, then runs
+  the accelerometer at 100 Hz, ±4 g and the gyroscope at 200 Hz, ±2000 °/s. The BMM150 runs at 20 Hz
+  with its factory trim applied.
+- **Lifetime.** The sensors are read on a thread of their own while an IMU page is open (motion every
+  40 ms, the field every 80 ms, the temperature every second) and released when you leave the tool.
+  After 25 failed reads in a row the worker gives up on that chip.
+- **Desktop builds** have no I2C; the pages say so.
+
+```ini
+[imu]
+enabled=yes
+i2c_device=
+```
+
+`i2c_device` is the bus the BMI270 is on, such as `/dev/i2c-1`; left empty, every bus is searched.
+`enabled=no` keeps the tool off the bus.
+
+### Motion
+
+A table of acceleration (g), rotation (°/s) and magnetic field (µT) on the X, Y and Z axes, in the
+sensors' own axes, with pitch, roll and the BMI270's temperature below it. `Enter` zeroes the
+gyroscope: hold the device still while you press it, because the current rotation becomes the offset.
+`0` clears the offset.
+
+### Compass
+
+A dial with a needle pointing north, the heading in degrees with its compass point (`274° W`), and
+the field on each axis with its strength.
+
+- **Calibration.** The heading appears once each axis has seen at least 40 µT between its lowest and
+  highest reading, about the strength of the earth's field. Until then the page shows
+  `Calibrating NN%`: turn the device slowly around every axis. The middle of each axis's range is then
+  taken as its offset, which removes the steady field of the device itself (hard-iron calibration).
+  `Enter` throws the calibration away and starts again.
+- **Hold it flat.** The heading is worked out from X and Y only, without tilt compensation, so it is
+  right only while the device lies flat.
+
+### Level
+
+A bubble level: the bubble floats to the high side and stops at the rim beyond 20° of tilt. The page
+shows the total tilt in degrees, or `Level` within 1°, with pitch and roll below. `Enter` takes the
+current tilt as level, for a surface that is not quite flat or a device in a case; `0` goes back to
+the sensor's own level.
+
+## Web Files
+
+**Web Files** on the main menu turns the device into a small file server for a
+phone or PC on the same network. While the page is open it shows the address
+to open (`http://<ip>:8080`) and a six-digit PIN; leaving the page stops the
+server and logs every browser out.
+
+In the browser you can browse the home folder of the user running ZeroSub
+(sub-folders, hidden files on request), view text files such as `.sub`, `.ir`
+and `.nfc` and images, download files, upload files or whole folders (button
+or drag and drop, streamed straight to disk), create folders, rename and delete.
+
+**Installing packages:** `.deb` files get an **Install** button. It runs
+`apt-get install --reinstall --allow-downgrades` on the file as root, so
+dependencies are pulled in, an older version can be put back, and the same
+version can be reinstalled. The page shows apt's output live; the device's
+**Last** row shows *Installing...*, then the result. ZeroSub is normally started
+as root by the launcher; when it is not, `sudo -n` is used, which fails instead
+of asking for a password. apt runs in its own session and logs to
+`/tmp/zerosub-install-<uid>.log` (`-0` when root), so it finishes even if ZeroSub is closed or the
+package restarts it. After updating ZeroSub itself, restart the app to run the
+new version. Only one install runs at a time. Anyone with the PIN can install
+packages as root, so treat the PIN like a root password.
+
+- Nothing outside the home folder can be reached: `..` is refused and symlinks
+  that lead outside are not followed. Deleting a symlink removes only the link.
+- **ENTER** on the device picks a new PIN and logs every browser out. Five wrong
+  PINs lock the login for 30 seconds.
+- Traffic is plain HTTP, so only use it on a network you trust.
+- The first port tried is set by `[web] port` in `zerosub.conf` (default 8080).
+  When it is taken the next nine are tried, then any free port; the screen
+  always shows the address actually in use.
+- Files the app saves to an SD card (`/media/...`) are outside the home folder
+  and not shown.
 
 ## 125 kHz RFID
 
@@ -1204,7 +1308,7 @@ By default, the debian package is copied to '$HOME' folder, normally it's under 
 On your device, install the copied package with `apt` and replace the package file name with the one you copied:
 
 ```shell
-sudo apt install --no-install-recommends ./ZeroSub_0.18.8_rev1_arm64.deb
+sudo apt install --no-install-recommends ./ZeroSub_0.18.17_rev1_arm64.deb
 ```
 
 
@@ -1217,7 +1321,7 @@ Navigation uses four letter keys as an arrow cluster: `F` is up, `X` is down, `Z
 | Page | Key | Action |
 | --- | --- | --- |
 | Any | `Fn`+`H` | Keyboard help for the current page |
-| Any | `Fn`+`J` | Screenshot |
+| Any | `Fn`+`J` | Screenshot, saved as `zerosub_<date>_<time>.png` in `~/Pictures` of the user who started the app |
 | Main menu | `F` / `X` | Move the selection |
 | Main menu | `C` or `Enter` | Open the selected tool, or toggle dark mode |
 | Main menu | Hold `ESC` | Exit |
@@ -1299,6 +1403,15 @@ Navigation uses four letter keys as an arrow cluster: `F` is up, `X` is down, `Z
 | Tag | `O` | Amiibo: back to the file's own UID |
 | Tag | `8`, then `8` again | Delete the tag file |
 | Tag | `Z` or `ESC` | Stop emulating or writing; otherwise back to Saved Tags |
+| IMU menu | `F` / `X` | Move the selection |
+| IMU menu | `C` or `Enter` | Open the selected page |
+| IMU menu | `ESC` | Back to the main menu |
+| Motion | `Enter` | Zero the gyroscope (hold the device still) |
+| Motion | `0` | Clear the gyroscope offset |
+| Compass | `Enter` | Restart the calibration |
+| Level | `Enter` | Take the current tilt as level |
+| Level | `0` | Clear the level point |
+| Motion, Compass, Level | `Z` or `ESC` | Back to the IMU menu |
 
 ### Adding a Screen
 
@@ -1366,7 +1479,7 @@ Debian packages are produced with CPack and written to `dist/`. The package file
 Default example:
 
 ```text
-dist/ZeroSub_0.18.8_rev1_arm64.deb
+dist/ZeroSub_0.18.17_rev1_arm64.deb
 ```
 
 Package layout:

@@ -28,6 +28,8 @@ private:
     static void refresh_observer_cb(lv_observer_t* observer, lv_subject_t* subject);
 
     const model::AppPage page_;
+    /* Tag page: the open file is an amiibo, so R / O (new / original UID) apply. */
+    const bool amiibo_;
     ListRows rows_;
     lv_obj_t* empty_label_{nullptr};
     lv_obj_t* summary_label_{nullptr};

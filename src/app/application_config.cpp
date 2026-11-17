@@ -170,6 +170,18 @@ bool load_application_config(const std::string& path,
                 return false;
             }
         }
+        else if (section == "web" && key == "port") {
+            const auto value = trim(line.substr(separator + 1));
+            const bool digits_only = !value.empty() && value.size() <= 5 &&
+                                     std::all_of(value.begin(), value.end(), [](unsigned char character) {
+                                         return std::isdigit(character) != 0;
+                                     });
+            if (!digits_only || std::stoi(value) < 1 || std::stoi(value) > 65535) {
+                error = "invalid port value at line " + std::to_string(line_number);
+                return false;
+            }
+            config.web_port = static_cast<std::uint16_t>(std::stoi(value));
+        }
         else if (section == "imu" && key == "i2c_device") {
             config.imu_i2c_device = trim(line.substr(separator + 1));
         }

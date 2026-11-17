@@ -22,7 +22,12 @@ SavedScreen::SavedScreen(viewmodel::BaseViewModel& view_model, app::AssetManager
 }
 
 std::vector<view::widgets::NavHint> SavedScreen::nav_hints() const {
-    return {{"ESC", "Back"}, {"C", "Open"}, {"ENTER", "Send"}, {"8", "Delete"}};
+    return {{"ESC", "Back"},
+            {"F/X", "Move"},
+            {"Z", "Up"},
+            {"C", "Open"},
+            {"ENTER", "Send"},
+            {"8", "Delete"}};
 }
 
 bool SavedScreen::on_key(uint32_t key) {

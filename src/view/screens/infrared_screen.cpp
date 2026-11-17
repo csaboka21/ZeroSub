@@ -37,11 +37,23 @@ InfraredScreen::InfraredScreen(viewmodel::BaseViewModel& view_model,
 std::vector<view::widgets::NavHint> InfraredScreen::nav_hints() const {
     switch (page_) {
         case model::AppPage::IrSaved:
-            return {{"ESC", "Back"}, {"F/X", "Move"}, {"C", "Open"}, {"8", "Delete"}};
+            return {{"ESC", "Back"},
+                    {"F/X", "Move"},
+                    {"Z", "Up"},
+                    {"C/ENTER", "Open"},
+                    {"8", "Delete"}};
         case model::AppPage::IrRemote:
-            return {{"ESC", "Back"}, {"ENTER", "Send"}, {"C", "Info"}, {"8", "Delete"}};
+            return {{"Z/ESC", "Back"},
+                    {"F/X", "Move"},
+                    {"ENTER", "Send"},
+                    {"C", "Info"},
+                    {"8", "Delete"}};
         default:
-            return {{"ESC", "Back"}, {"C", "Info"}, {"ENTER", "Save"}, {"6", "Save all"}};
+            return {{"ESC", "Back"},
+                    {"F/X", "Move"},
+                    {"C", "Info"},
+                    {"ENTER", "Save"},
+                    {"6", "Save all"}};
     }
 }
 

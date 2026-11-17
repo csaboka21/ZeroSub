@@ -39,6 +39,8 @@ protected:
     virtual std::vector<view::widgets::NavHint> nav_hints() const = 0;
     /* Handles a key press for this page. Returns true if the key was used. */
     virtual bool on_key(uint32_t key);
+    /* Rebuilds the bottom bar from nav_hints(), for pages whose keys change with their state. */
+    void refresh_nav_hints();
 
     viewmodel::BaseViewModel& view_model();
     app::AssetManager& assets();

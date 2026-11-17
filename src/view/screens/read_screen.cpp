@@ -22,7 +22,12 @@ ReadScreen::ReadScreen(viewmodel::BaseViewModel& view_model, app::AssetManager& 
 }
 
 std::vector<view::widgets::NavHint> ReadScreen::nav_hints() const {
-    return {{"ESC", "Back"}, {"F/X", "Move"}, {"C", "Info"}, {"ENTER", "Save"}};
+    return {{"ESC", "Back"},
+            {"F/X", "Move"},
+            {"C", "Info"},
+            {"ENTER", "Save"},
+            {"7/8", "Freq -/+"},
+            {"5", "Modulation"}};
 }
 
 bool ReadScreen::on_key(uint32_t key) {

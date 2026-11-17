@@ -66,6 +66,12 @@ bool BaseScreen::on_key(uint32_t) {
     return false;
 }
 
+void BaseScreen::refresh_nav_hints() {
+    if (nav_bar_) {
+        nav_bar_->set_hints(nav_hints());
+    }
+}
+
 viewmodel::BaseViewModel& BaseScreen::view_model() {
     return view_model_;
 }

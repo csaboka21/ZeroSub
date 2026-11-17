@@ -16,6 +16,9 @@
 namespace view::widgets {
 namespace {
 
+constexpr std::size_t kMaxHelpRows = 8;
+constexpr int32_t kRowHeight = 15;
+
 struct HelpRow {
     const char* key;
     const char* action;
@@ -23,7 +26,7 @@ struct HelpRow {
 
 struct HelpPage {
     const char* badge;
-    std::array<HelpRow, 5> rows;
+    std::array<HelpRow, kMaxHelpRows> rows;
     std::size_t row_count;
 };
 
@@ -33,6 +36,9 @@ constexpr HelpPage kMenuHelp = {
         {"F / X", "Move the selection"},
         {"C / ENTER", "Open item"},
         {"HOLD ESC", "Exit"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
         {"", ""},
     }},
@@ -47,6 +53,9 @@ constexpr HelpPage kToolMenuHelp = {
         {"ESC", "Back to the main menu"},
         {"", ""},
         {"", ""},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     3,
 };
@@ -54,9 +63,12 @@ constexpr HelpPage kToolMenuHelp = {
 constexpr HelpPage kAnalyzerHelp = {
     "ANALYZER",
     {{
-        {"ESC", "Back to Sub-GHz menu"},
         {"", "Scans 17 channels, 300-925 MHz"},
         {"", "Shows the strongest signal"},
+        {"ESC", "Back to Sub-GHz menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
         {"", ""},
     }},
@@ -66,9 +78,12 @@ constexpr HelpPage kAnalyzerHelp = {
 constexpr HelpPage kMeterHelp = {
     "METER",
     {{
-        {"ESC", "Back to Sub-GHz menu"},
         {"Z / C", "Previous / next frequency"},
         {"F / X", "Previous / next modulation"},
+        {"ESC", "Back to Sub-GHz menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
         {"", ""},
     }},
@@ -80,11 +95,14 @@ constexpr HelpPage kReadRawHelp = {
     {{
         {"ENTER", "Record, stop, then save"},
         {"Z / C", "Frequency (when ready)"},
-        {"F / X, 6", "Modulation, threshold"},
-        {"C, 8", "Info, erase (when stopped)"},
+        {"F / X, 5", "Modulation (when ready)"},
+        {"6", "Threshold (when ready)"},
+        {"C", "Summary (when stopped)"},
+        {"8", "Erase (when stopped)"},
         {"ESC", "Back (discards unsaved)"},
+        {"", ""},
     }},
-    5,
+    7,
 };
 
 constexpr HelpPage kReadHelp = {
@@ -95,8 +113,11 @@ constexpr HelpPage kReadHelp = {
         {"ENTER", "Save the selected key"},
         {"7 / 8", "Previous / next frequency"},
         {"5", "Next modulation"},
+        {"ESC", "Back to Sub-GHz menu"},
+        {"", ""},
+        {"", ""},
     }},
-    5,
+    6,
 };
 
 constexpr HelpPage kSavedHelp = {
@@ -107,6 +128,9 @@ constexpr HelpPage kSavedHelp = {
         {"ENTER", "Send the selected file"},
         {"8, then 8", "Delete the selected file"},
         {"Z / ESC", "Up one folder / stop sending"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -119,6 +143,9 @@ constexpr HelpPage kInfoHelp = {
         {"8, then 8", "Delete (saved file)"},
         {"ESC", "Stop sending / back"},
         {"", "EU bands only, no rolling codes"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -131,8 +158,11 @@ constexpr HelpPage kAddHelp = {
         {"7 / 8", "Lower / raise the key digit"},
         {"6", "New random key"},
         {"ENTER", "Save and open the summary"},
+        {"ESC", "Back without saving"},
+        {"", ""},
+        {"", ""},
     }},
-    5,
+    6,
 };
 
 constexpr HelpPage kIrMenuHelp = {
@@ -143,6 +173,9 @@ constexpr HelpPage kIrMenuHelp = {
         {"ESC", "Back to the main menu"},
         {"", ""},
         {"", ""},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     3,
 };
@@ -150,13 +183,16 @@ constexpr HelpPage kIrMenuHelp = {
 constexpr HelpPage kIrLearnHelp = {
     "LEARN",
     {{
+        {"", "Point a remote at the receiver"},
         {"F / X", "Select a received signal"},
         {"C", "Summary of the signal"},
         {"ENTER", "Save it as a new remote"},
         {"6", "Save all as one remote"},
         {"ESC", "Back to Infrared menu"},
+        {"", ""},
+        {"", ""},
     }},
-    5,
+    6,
 };
 
 constexpr HelpPage kIrSavedHelp = {
@@ -166,6 +202,9 @@ constexpr HelpPage kIrSavedHelp = {
         {"C / ENTER", "Open it"},
         {"8, then 8", "Delete the selected remote"},
         {"Z / ESC", "Up one folder / back"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
     }},
     4,
@@ -179,6 +218,9 @@ constexpr HelpPage kIrRemoteHelp = {
         {"C", "Summary of the button"},
         {"8, then 8", "Delete the button"},
         {"Z / ESC", "Back to the remotes"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -191,6 +233,9 @@ constexpr HelpPage kIrInfoHelp = {
         {"8, then 8", "Delete (saved button)"},
         {"ESC", "Stop sending / back"},
         {"", ""},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     4,
 };
@@ -201,6 +246,9 @@ constexpr HelpPage kNfcMenuHelp = {
         {"F / X", "Move the selection"},
         {"C / ENTER", "Open item"},
         {"ESC", "Back to the main menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
         {"", ""},
     }},
@@ -215,6 +263,9 @@ constexpr HelpPage kNfcReadHelp = {
         {"ENTER", "Save the tag and open it"},
         {"5", "Read another tag"},
         {"ESC", "Back to NFC menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -227,6 +278,9 @@ constexpr HelpPage kNfcSavedHelp = {
         {"8, then 8", "Delete the selected tag"},
         {"Z / ESC", "Up one folder / back"},
         {"", ""},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     4,
 };
@@ -234,13 +288,16 @@ constexpr HelpPage kNfcSavedHelp = {
 constexpr HelpPage kNfcCardHelp = {
     "TAG",
     {{
+        {"F / X", "Scroll the tag's lines"},
         {"ENTER", "Emulate the tag / stop"},
         {"6", "Write it to a tag / stop"},
-        {"R / O", "Amiibo: new UID / original"},
+        {"R", "Amiibo: new random UID"},
+        {"O", "Amiibo: original UID"},
         {"8, then 8", "Delete the file"},
         {"Z / ESC", "Stop / back to the tags"},
+        {"", ""},
     }},
-    5,
+    7,
 };
 
 constexpr HelpPage kRfidMenuHelp = {
@@ -249,6 +306,9 @@ constexpr HelpPage kRfidMenuHelp = {
         {"F / X", "Move the selection"},
         {"C / ENTER", "Open item"},
         {"ESC", "Back to the main menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
         {"", ""},
     }},
@@ -263,6 +323,9 @@ constexpr HelpPage kRfidSavedHelp = {
         {"8, then 8", "Delete the selected key"},
         {"Z / ESC", "Up one folder / back"},
         {"", ""},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     4,
 };
@@ -270,11 +333,14 @@ constexpr HelpPage kRfidSavedHelp = {
 constexpr HelpPage kRfidKeyHelp = {
     "KEY",
     {{
+        {"F / X", "Scroll"},
         {"ENTER", "Emulate the key / stop"},
         {"I", "Swap the polarity"},
-        {"F / X", "Scroll"},
         {"8, then 8", "Delete the file"},
         {"Z / ESC", "Stop / back to the keys"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -287,6 +353,9 @@ constexpr HelpPage kRfidAddHelp = {
         {"R", "Random ID"},
         {"ENTER", "Save the key"},
         {"ESC", "Back without saving"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -295,10 +364,13 @@ constexpr HelpPage kRfidReadHelp = {
     "READ KEY",
     {{
         {"", "Hold an EM4100 tag on the coil"},
+        {"F / X", "Scroll"},
         {"ENTER", "Save the key read"},
         {"5", "Read another one"},
-        {"F / X", "Scroll"},
         {"ESC", "Back to the menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     5,
 };
@@ -311,6 +383,9 @@ constexpr HelpPage kImuMenuHelp = {
         {"ESC", "Back to the main menu"},
         {"", ""},
         {"", ""},
+        {"", ""},
+        {"", ""},
+        {"", ""},
     }},
     3,
 };
@@ -321,7 +396,10 @@ constexpr HelpPage kImuMotionHelp = {
         {"", "BMI270 accel, gyro and tilt; BMM150 field"},
         {"ENTER", "Zero the gyro (hold still)"},
         {"0", "Clear the gyro offset"},
-        {"ESC", "Back to the menu"},
+        {"Z / ESC", "Back to the menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
     }},
     4,
@@ -333,7 +411,10 @@ constexpr HelpPage kImuCompassHelp = {
         {"", "Turn the device around every axis"},
         {"", "until calibration reaches 100%"},
         {"ENTER", "Restart the calibration"},
-        {"ESC", "Back to the menu"},
+        {"Z / ESC", "Back to the menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
     }},
     4,
@@ -345,10 +426,28 @@ constexpr HelpPage kImuLevelHelp = {
         {"", "The bubble shows the high side"},
         {"ENTER", "Take this tilt as level"},
         {"0", "Clear the level zero"},
-        {"ESC", "Back to the menu"},
+        {"Z / ESC", "Back to the menu"},
+        {"", ""},
+        {"", ""},
+        {"", ""},
         {"", ""},
     }},
     4,
+};
+
+constexpr HelpPage kWebFilesHelp = {
+    "WEB FILES",
+    {{
+        {"", "Open the address in a browser on the"},
+        {"", "same network and log in with the PIN"},
+        {"", "Browse, download and upload in ~;"},
+        {"", "install .deb packages with apt-get"},
+        {"ENTER", "New PIN (logs browsers out)"},
+        {"ESC", "Stop the server, back to menu"},
+        {"", ""},
+        {"", ""},
+    }},
+    6,
 };
 
 const HelpPage& help_for(model::AppPage page, bool infrared_info) {
@@ -389,6 +488,8 @@ const HelpPage& help_for(model::AppPage page, bool infrared_info) {
             return kImuCompassHelp;
         case model::AppPage::ImuLevel:
             return kImuLevelHelp;
+        case model::AppPage::WebFiles:
+            return kWebFilesHelp;
         case model::AppPage::AddManually:
             return kAddHelp;
         case model::AppPage::Read:
@@ -432,7 +533,8 @@ void HelpPopup::build() {
 
     panel_ = lv_obj_create(core_obj_);
     lv_obj_remove_style_all(panel_);
-    lv_obj_set_size(panel_, 292, 146);
+    /* Nearly the full screen, so the longest page (8 rows) fits. */
+    lv_obj_set_size(panel_, 308, 166);
     lv_obj_center(panel_);
     lv_obj_set_style_radius(panel_, 6, 0);
     lv_obj_set_style_bg_opa(panel_, LV_OPA_COVER, 0);
@@ -447,7 +549,7 @@ void HelpPopup::build() {
     lv_label_set_text(title_, "Keyboard help");
     auto* title_font = assets_.load_standard_font(15);
     lv_obj_set_style_text_font(title_, title_font ? title_font : &lv_font_montserrat_14, 0);
-    lv_obj_align(title_, LV_ALIGN_TOP_LEFT, 12, 9);
+    lv_obj_align(title_, LV_ALIGN_TOP_LEFT, 12, 5);
 
     page_badge_ = lv_label_create(panel_);
     auto* badge_font = assets_.load_standard_font(11);
@@ -455,15 +557,15 @@ void HelpPopup::build() {
     lv_obj_set_style_radius(page_badge_, 3, 0);
     lv_obj_set_style_pad_hor(page_badge_, 6, 0);
     lv_obj_set_style_pad_ver(page_badge_, 2, 0);
-    lv_obj_align(page_badge_, LV_ALIGN_TOP_RIGHT, -10, 7);
+    lv_obj_align(page_badge_, LV_ALIGN_TOP_RIGHT, -10, 5);
 
     auto* rows = lv_obj_create(panel_);
     lv_obj_remove_style_all(rows);
-    lv_obj_set_size(rows, 268, 88);
-    lv_obj_align(rows, LV_ALIGN_TOP_MID, 0, 35);
+    lv_obj_set_size(rows, 284, static_cast<int32_t>(kMaxHelpRows) * kRowHeight);
+    lv_obj_align(rows, LV_ALIGN_TOP_MID, 0, 25);
     lv_obj_set_flex_flow(rows, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(rows, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_set_style_pad_row(rows, 1, 0);
+    lv_obj_set_style_pad_row(rows, 0, 0);
     lv_obj_clear_flag(rows, LV_OBJ_FLAG_SCROLLABLE);
 
     auto* key_font = assets_.load_standard_font(11);
@@ -471,17 +573,17 @@ void HelpPopup::build() {
     for (auto& widgets : rows_) {
         widgets.row = lv_obj_create(rows);
         lv_obj_remove_style_all(widgets.row);
-        lv_obj_set_size(widgets.row, LV_PCT(100), 16);
+        lv_obj_set_size(widgets.row, LV_PCT(100), kRowHeight);
         lv_obj_clear_flag(widgets.row, LV_OBJ_FLAG_SCROLLABLE);
 
         widgets.key = lv_label_create(widgets.row);
-        lv_obj_set_width(widgets.key, 82);
+        lv_obj_set_width(widgets.key, 86);
         lv_obj_set_style_text_font(widgets.key, key_font ? key_font : &lv_font_montserrat_12, 0);
         lv_obj_set_style_text_align(widgets.key, LV_TEXT_ALIGN_LEFT, 0);
         lv_obj_align(widgets.key, LV_ALIGN_LEFT_MID, 0, 0);
 
         widgets.action = lv_label_create(widgets.row);
-        lv_obj_set_width(widgets.action, 176);
+        lv_obj_set_width(widgets.action, 196);
         lv_obj_set_style_text_font(widgets.action,
                                    action_font ? action_font : &lv_font_montserrat_12,
                                    0);
@@ -495,7 +597,7 @@ void HelpPopup::build() {
     lv_obj_set_style_text_font(footer_, footer_font ? footer_font : &lv_font_montserrat_10, 0);
     lv_obj_set_style_text_align(footer_, LV_TEXT_ALIGN_LEFT, 0);
     lv_obj_set_size(footer_, LV_SIZE_CONTENT, 12);
-    lv_obj_align(footer_, LV_ALIGN_BOTTOM_LEFT, 12, -7);
+    lv_obj_align(footer_, LV_ALIGN_BOTTOM_LEFT, 12, -5);
 
     lv_subject_add_observer_obj(view_model_.dark_mode_subject(),
                                 theme_observer_cb,

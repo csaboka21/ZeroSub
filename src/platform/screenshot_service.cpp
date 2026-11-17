@@ -6,6 +6,8 @@
 
 #include "screenshot_service.h"
 
+#include "capture_store.h"
+
 #include "lvgl.h"
 
 #include <png.h>
@@ -13,31 +15,20 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdint>
-#include <cstdlib>
 #include <ctime>
 #include <filesystem>
 #include <string>
 #include <vector>
 
-#if !defined(_WIN32)
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
 namespace platform::screenshot {
 namespace {
 
+/*
+ * The Pictures folder of the user who started the app. ZeroSub is started
+ * through sudo, so $HOME would be root's; the invoking user's home is used.
+ */
 std::filesystem::path screenshot_directory() {
-    if (const char* home = std::getenv("HOME"); home && home[0] != '\0') {
-        return std::filesystem::path(home) / "Pictures" / "Screenshots";
-    }
-#if !defined(_WIN32)
-    if (const passwd* user = getpwuid(getuid()); user && user->pw_dir && user->pw_dir[0] != '\0') {
-        return std::filesystem::path(user->pw_dir) / "Pictures" / "Screenshots";
-    }
-#endif
-    return std::filesystem::path("/tmp") / "Screenshots";
+    return std::filesystem::path(platform::user_home_directory()) / "Pictures";
 }
 
 std::string timestamp_filename() {
@@ -147,7 +138,7 @@ CaptureResult capture_active_screen() {
 
     const auto directory = screenshot_directory();
     std::error_code filesystem_error;
-    std::filesystem::create_directories(directory, filesystem_error);
+    const bool created = std::filesystem::create_directories(directory, filesystem_error);
     if (filesystem_error) {
         result.error = "Unable to create screenshot directory: " + filesystem_error.message();
         return result;
@@ -163,6 +154,11 @@ CaptureResult capture_active_screen() {
     result.success = write_png(path, snapshot, result.error);
     lv_draw_buf_destroy(snapshot);
     if (result.success) {
+        /* Under sudo the folder and file would belong to root; give them to the user. */
+        if (created) {
+            platform::hand_to_invoking_user(directory.string());
+        }
+        platform::hand_to_invoking_user(path.string());
         result.path = path.string();
     }
     return result;

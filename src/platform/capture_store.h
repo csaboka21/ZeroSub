@@ -94,6 +94,12 @@ std::string default_capture_directory();
  */
 std::string default_module_directory(const char* module_folder);
 
+/*
+ * The home directory of the user who started the app: the invoking user's
+ * when started through sudo, otherwise $HOME (%USERPROFILE% on Windows).
+ */
+std::string user_home_directory();
+
 /* When running under sudo, makes the invoking user the owner of a file or folder the app created. */
 void hand_to_invoking_user(const std::string& path);
 

@@ -91,11 +91,11 @@ ImuScreen::ImuScreen(viewmodel::BaseViewModel& view_model, app::AssetManager& as
 std::vector<view::widgets::NavHint> ImuScreen::nav_hints() const {
     switch (page_) {
         case model::AppPage::ImuMotion:
-            return {{"ESC", "Back"}, {"ENTER", "Zero gyro"}, {"0", "Clear"}};
+            return {{"Z/ESC", "Back"}, {"ENTER", "Zero gyro"}, {"0", "Clear offset"}};
         case model::AppPage::ImuCompass:
-            return {{"ESC", "Back"}, {"ENTER", "Recalibrate"}};
+            return {{"Z/ESC", "Back"}, {"ENTER", "Recalibrate"}};
         default:
-            return {{"ESC", "Back"}, {"ENTER", "Set level"}, {"0", "Clear"}};
+            return {{"Z/ESC", "Back"}, {"ENTER", "Set level"}, {"0", "Clear level"}};
     }
 }
 

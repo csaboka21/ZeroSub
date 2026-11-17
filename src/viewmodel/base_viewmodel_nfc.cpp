@@ -639,6 +639,10 @@ void BaseViewModel::nfc_note(const std::string& text) {
     nfc_touch();
 }
 
+bool BaseViewModel::nfc_card_is_amiibo() const {
+    return model::amiibo_shaped(nfc_card_original_);
+}
+
 void BaseViewModel::nfc_new_uid() {
     if (model_.current_page() != model::AppPage::NfcCard) {
         return;

@@ -22,6 +22,7 @@ constexpr std::array<const char*, model::kMainMenuItemCount> kMainTitles = {
     "Infrared",
     "NFC",
     "IMU",
+    "Web Files",
     "Dark mode",
 };
 
@@ -89,9 +90,9 @@ MenuScreen::MenuScreen(viewmodel::BaseViewModel& view_model, app::AssetManager& 
 
 std::vector<view::widgets::NavHint> MenuScreen::nav_hints() const {
     if (page_ == model::AppPage::Menu) {
-        return {{"F/X", "Move"}, {"C", "Open"}, {"Hold ESC", "Exit"}};
+        return {{"F/X", "Move"}, {"C/ENTER", "Open"}, {"Fn+H", "Help"}, {"Hold ESC", "Exit"}};
     }
-    return {{"ESC", "Back"}, {"F/X", "Move"}, {"C", "Open"}};
+    return {{"ESC", "Back"}, {"F/X", "Move"}, {"C/ENTER", "Open"}};
 }
 
 void MenuScreen::build_content(lv_obj_t* content) {

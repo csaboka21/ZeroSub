@@ -24,13 +24,25 @@ RfidScreen::RfidScreen(viewmodel::BaseViewModel& view_model, app::AssetManager& 
 std::vector<view::widgets::NavHint> RfidScreen::nav_hints() const {
     switch (page_) {
         case model::AppPage::RfidKey:
-            return {{"ESC", "Back"}, {"ENTER", "Emulate"}, {"I", "Polarity"}, {"8", "Delete"}};
+            return {{"Z/ESC", "Back"},
+                    {"F/X", "Scroll"},
+                    {"ENTER", "Emulate"},
+                    {"I", "Polarity"},
+                    {"8", "Delete"}};
         case model::AppPage::RfidAdd:
-            return {{"ESC", "Back"}, {"F/X", "Digit"}, {"Z/C", "Move"}, {"ENTER", "Save"}};
+            return {{"ESC", "Back"},
+                    {"F/X", "Digit"},
+                    {"Z/C", "Move"},
+                    {"R", "Random"},
+                    {"ENTER", "Save"}};
         case model::AppPage::RfidRead:
             return {{"ESC", "Back"}, {"F/X", "Scroll"}, {"ENTER", "Save"}, {"5", "Again"}};
         default:
-            return {{"ESC", "Back"}, {"F/X", "Move"}, {"C", "Open"}, {"8", "Delete"}};
+            return {{"ESC", "Back"},
+                    {"F/X", "Move"},
+                    {"Z", "Up"},
+                    {"C/ENTER", "Open"},
+                    {"8", "Delete"}};
     }
 }
 

@@ -37,7 +37,12 @@ AddManuallyScreen::AddManuallyScreen(viewmodel::BaseViewModel& view_model, app::
 }
 
 std::vector<view::widgets::NavHint> AddManuallyScreen::nav_hints() const {
-    return {{"ESC", "Back"}, {"F/X", "Field"}, {"Z/C", "Change"}, {"ENTER", "Save"}};
+    return {{"ESC", "Back"},
+            {"F/X", "Field"},
+            {"Z/C", "Change"},
+            {"7/8", "Digit -/+"},
+            {"6", "Random"},
+            {"ENTER", "Save"}};
 }
 
 bool AddManuallyScreen::on_key(uint32_t key) {

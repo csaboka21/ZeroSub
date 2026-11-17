@@ -325,6 +325,7 @@ int Application::run() {
     imu_config.enabled = config.imu_enabled;
     imu_config.i2c_device = config.imu_i2c_device;
     view_model.configure_imu(imu_config);
+    view_model.configure_web(config.web_port);
     LOG_INFO("cc1101 spi device: {}",
              radio_config.spi_device.empty() ? "(not configured)" : radio_config.spi_device);
 

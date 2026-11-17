@@ -28,16 +28,35 @@ const char* empty_text(model::AppPage page) {
 } // namespace
 
 NfcScreen::NfcScreen(viewmodel::BaseViewModel& view_model, app::AssetManager& assets, model::AppPage page)
-    : BaseScreen(view_model, assets), page_(page) {
+    : BaseScreen(view_model, assets),
+      page_(page),
+      amiibo_(page == model::AppPage::NfcCard && view_model.nfc_card_is_amiibo()) {
     init();
 }
 
 std::vector<view::widgets::NavHint> NfcScreen::nav_hints() const {
     switch (page_) {
         case model::AppPage::NfcSaved:
-            return {{"ESC", "Back"}, {"F/X", "Move"}, {"C", "Open"}, {"8", "Delete"}};
+            return {{"ESC", "Back"},
+                    {"F/X", "Move"},
+                    {"Z", "Up"},
+                    {"C/ENTER", "Open"},
+                    {"8", "Delete"}};
         case model::AppPage::NfcCard:
-            return {{"ESC", "Back"}, {"ENTER", "Emulate"}, {"6", "Write"}, {"8", "Delete"}};
+            if (amiibo_) {
+                return {{"Z/ESC", "Back"},
+                        {"F/X", "Scroll"},
+                        {"ENTER", "Emulate"},
+                        {"6", "Write"},
+                        {"R", "New UID"},
+                        {"O", "Orig UID"},
+                        {"8", "Delete"}};
+            }
+            return {{"Z/ESC", "Back"},
+                    {"F/X", "Scroll"},
+                    {"ENTER", "Emulate"},
+                    {"6", "Write"},
+                    {"8", "Delete"}};
         default:
             return {{"ESC", "Back"}, {"F/X", "Scroll"}, {"ENTER", "Save"}, {"5", "Again"}};
     }

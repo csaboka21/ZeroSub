@@ -18,6 +18,7 @@
 #include "rfid_emulator.h"
 #include "rfid_reader.h"
 #include "subjects.h"
+#include "web_server.h"
 #include "base_model.h"
 #include "infrared/ir_protocols.h"
 #include "protocols/key_decoder.h"
@@ -205,6 +206,17 @@ public:
     /* Calibration progress of the compass, 0-100. */
     int32_t imu_calibration_percent() const;
 
+    /*
+     * Web Files: an HTTP file manager for the home folder, running while the
+     * page is open. The revision changes with the server's status and the
+     * network addresses.
+     */
+    lv_subject_t* web_revision_subject();
+    /* Server status; running is false while it is not up. */
+    const platform::WebServer::Status& web_status() const;
+    /* "http://<ip>:<port>" for every network interface that is up. */
+    const std::vector<std::string>& web_urls() const;
+
     /* Frequency analyzer. The revision changes once per completed sweep. */
     lv_subject_t* analyzer_revision_subject();
     lv_subject_t* analyzer_detected_subject();
@@ -328,6 +340,8 @@ public:
     void nfc_new_uid();
     /* Tag: back to the UID of the file. */
     void nfc_original_uid();
+    /* Tag: true when the open file is an amiibo, so a new UID can be made for it. */
+    bool nfc_card_is_amiibo() const;
     /* Read: forgets the tag shown and waits for another one. */
     void nfc_read_again();
     /* Deletes the selected or shown tag file. The first call only asks for confirmation. */
@@ -366,6 +380,11 @@ public:
     void imu_activate();
     /* Back to factory: no gyro offset, no level zero. */
     void imu_clear();
+
+    /* First port the web server tries. */
+    void configure_web(uint16_t port);
+    /* A new PIN for the web server; every browser has to log in again. */
+    void web_new_pin();
 
     void add_field_next();
     void add_field_previous();
@@ -467,6 +486,10 @@ private:
     void imu_set_message();
     void imu_touch();
     static void imu_timer_cb(lv_timer_t* timer);
+
+    void sync_web_activity();
+    void poll_web();
+    static void web_timer_cb(lv_timer_t* timer);
 
     void publish_all();
     void publish_meter_settings();
@@ -575,6 +598,14 @@ private:
     bool imu_field_seen_{false};
     std::array<float, 3> imu_field_min_{};
     std::array<float, 3> imu_field_max_{};
+
+    reactive::IntSubject web_revision_subject_;
+    uint16_t web_port_{8080};
+    std::unique_ptr<platform::WebServer> web_server_;
+    lv_timer_t* web_timer_{nullptr};
+    uint32_t web_seen_revision_{0};
+    platform::WebServer::Status web_status_;
+    std::vector<std::string> web_urls_;
 
     /* NFC reader and library, as configured. */
     platform::St25r3916Config nfc_config_;

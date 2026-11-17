@@ -242,19 +242,14 @@ void hand_to_invoking_user(const std::string& path) {
     hand_to_invoking_user_path(path);
 }
 
-std::string default_module_directory(const char* module_folder) {
-    const std::string card = removable_storage_mount();
-    if (!card.empty()) {
-        return (std::filesystem::path(card) / kDataFolder / module_folder).string();
-    }
-
+std::string user_home_directory() {
     std::filesystem::path home;
 #if !defined(_WIN32)
     uid_t uid = 0;
     gid_t gid = 0;
     if (invoking_user(uid, gid)) {
         if (const passwd* entry = ::getpwuid(uid)) {
-            if (entry->pw_dir && entry->pw_dir[0] != '\0') {
+            if (entry->pw_dir && entry->pw_dir[0] != ' ') {
                 home = entry->pw_dir;
             }
         }
@@ -272,7 +267,15 @@ std::string default_module_directory(const char* module_folder) {
     if (home.empty()) {
         home = ".";
     }
-    return (home / kDataFolder / module_folder).string();
+    return home.string();
+}
+
+std::string default_module_directory(const char* module_folder) {
+    const std::string card = removable_storage_mount();
+    if (!card.empty()) {
+        return (std::filesystem::path(card) / kDataFolder / module_folder).string();
+    }
+    return (std::filesystem::path(user_home_directory()) / kDataFolder / module_folder).string();
 }
 
 bool ensure_capture_directory(const std::string& directory, std::string& error) {

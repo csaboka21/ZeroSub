@@ -89,6 +89,8 @@ const char* BaseModel::page_title() const {
             return "Compass";
         case AppPage::ImuLevel:
             return "Level";
+        case AppPage::WebFiles:
+            return "Web Files";
         case AppPage::Menu:
             break;
     }

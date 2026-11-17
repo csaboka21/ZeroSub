@@ -95,7 +95,8 @@ BaseViewModel::BaseViewModel()
       rfid_message_subject_(""),
       rfid_saved_selection_subject_(0),
       imu_revision_subject_(0),
-      imu_message_subject_("") {
+      imu_message_subject_(""),
+      web_revision_subject_(0) {
     publish_raw_threshold();
     analyzer_sweep_.fill(kRssiFloorDbm);
     analyzer_channels_.fill(kRssiFloorDbm);
@@ -126,6 +127,11 @@ BaseViewModel::~BaseViewModel() {
         imu_timer_ = nullptr;
     }
     imu_worker_.reset();
+    if (web_timer_) {
+        lv_timer_delete(web_timer_);
+        web_timer_ = nullptr;
+    }
+    web_server_.reset();
     /* Ends a running emulation or read, which leaves the coil in tag mode and gives the pins back. */
     rfid_emulator_.reset();
     rfid_reader_.reset();
@@ -275,6 +281,7 @@ void BaseViewModel::show_page(model::AppPage page) {
     sync_nfc_activity();
     sync_rfid_activity();
     sync_imu_activity();
+    sync_web_activity();
 }
 
 void BaseViewModel::show_menu() {
@@ -369,6 +376,11 @@ void BaseViewModel::go_back() {
     if (model_.current_page() == model::AppPage::Menu) {
         return;
     }
+    /* Web Files hangs off the main menu directly; leaving it stops the server. */
+    if (model_.current_page() == model::AppPage::WebFiles) {
+        show_page(model::AppPage::Menu);
+        return;
+    }
     if (model_.current_page() != model::AppPage::Info) {
         show_menu();
         return;
@@ -424,6 +436,9 @@ void BaseViewModel::menu_activate() {
                 break;
             case model::MainMenuItem::Imu:
                 show_page(model::AppPage::ImuMenu);
+                break;
+            case model::MainMenuItem::WebFiles:
+                show_page(model::AppPage::WebFiles);
                 break;
             case model::MainMenuItem::DarkMode:
                 toggle_dark_mode();
@@ -733,6 +748,8 @@ BaseViewModel::RadioMode BaseViewModel::wanted_radio_mode() const {
         case model::AppPage::ImuMotion:
         case model::AppPage::ImuCompass:
         case model::AppPage::ImuLevel:
+        /* Nor does Web Files. */
+        case model::AppPage::WebFiles:
             break;
     }
     return RadioMode::Off;

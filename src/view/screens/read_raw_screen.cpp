@@ -24,12 +24,25 @@ constexpr uint32_t kChartPoints = 100;
 } // namespace
 
 ReadRawScreen::ReadRawScreen(viewmodel::BaseViewModel& view_model, app::AssetManager& assets)
-    : BaseScreen(view_model, assets) {
+    : BaseScreen(view_model, assets), shown_state_(state()) {
     init();
 }
 
 std::vector<view::widgets::NavHint> ReadRawScreen::nav_hints() const {
-    return {{"ESC", "Back"}, {"ENTER", "Rec / Stop"}, {"Fn+H", "Help"}};
+    /* The keys change with the recording state; refresh() rebuilds the bar when it moves on. */
+    switch (shown_state_) {
+        case model::RawState::Recording:
+            return {{"ESC", "Back"}, {"ENTER", "Stop"}};
+        case model::RawState::Stopped:
+            return {{"ESC", "Back"}, {"ENTER", "Save"}, {"C", "Info"}, {"8", "Erase"}};
+        case model::RawState::Idle:
+            break;
+    }
+    return {{"ESC", "Back"},
+            {"ENTER", "Record"},
+            {"Z/C", "Freq"},
+            {"F/X", "Modulation"},
+            {"6", "Threshold"}};
 }
 
 model::RawState ReadRawScreen::state() {
@@ -147,16 +160,11 @@ void ReadRawScreen::build_content(lv_obj_t* content) {
     lv_obj_set_style_text_font(state_label_, bold_font, 0);
     lv_obj_align(state_label_, LV_ALIGN_TOP_LEFT, kSideMargin, 64);
 
-    keys_label_ = lv_label_create(content);
-    lv_obj_set_style_text_font(keys_label_, small_font, 0);
-    lv_obj_align(keys_label_, LV_ALIGN_TOP_LEFT, kSideMargin, 79);
-    reactive::bind_theme(keys_label_, view_model().dark_mode_subject(), reactive::ThemeRole::Text);
-
     info_label_ = lv_label_create(content);
     lv_label_set_long_mode(info_label_, LV_LABEL_LONG_DOT);
     lv_obj_set_width(info_label_, kChartWidth);
     lv_obj_set_style_text_font(info_label_, small_font, 0);
-    lv_obj_align(info_label_, LV_ALIGN_TOP_LEFT, kSideMargin, 94);
+    lv_obj_align(info_label_, LV_ALIGN_TOP_LEFT, kSideMargin, 82);
 
     /* All observers are bound to the chart object and fire once on registration. */
     lv_subject_add_observer_obj(view_model().raw_tick_subject(), tick_observer_cb, chart_, this);
@@ -202,21 +210,23 @@ void ReadRawScreen::refresh() {
         lv_obj_add_flag(threshold_line_, LV_OBJ_FLAG_HIDDEN);
     }
 
+    if (state() != shown_state_) {
+        shown_state_ = state();
+        refresh_nav_hints();
+    }
+
     switch (state()) {
         case model::RawState::Idle:
             lv_label_set_text(state_label_, "READY");
             lv_obj_set_style_text_color(state_label_, colors.text, 0);
-            lv_label_set_text(keys_label_, "ENTER Rec   Z/C Freq   F/X Mod   6 Threshold");
             break;
         case model::RawState::Recording:
             lv_label_set_text_fmt(state_label_, "REC   %d pulses", samples);
             lv_obj_set_style_text_color(state_label_, colors.error, 0);
-            lv_label_set_text(keys_label_, "ENTER Stop");
             break;
         case model::RawState::Stopped:
             lv_label_set_text_fmt(state_label_, "STOPPED   %d pulses", samples);
             lv_obj_set_style_text_color(state_label_, colors.text, 0);
-            lv_label_set_text(keys_label_, "ENTER Save   C Info   8 Erase");
             break;
     }
 

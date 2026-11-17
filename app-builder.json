@@ -1,33 +1,33 @@
 {
   "app_name": "ZeroSub",
   "package_name": "zerosub",
-  "version": "0.18.8",
-  "description": "Sub-GHz, infrared and NFC tool for the CardputerZero and Cap CC1101",
+  "version": "0.18.17",
+  "description": "Sub-GHz, infrared, NFC and motion sensor tool for the CardputerZero and Cap CC1101",
   "store": {
-    "summary": "Sub-GHz, infrared and NFC tool for the Cap CC1101, Flipper file compatible",
-    "description": "ZeroSub turns the CardputerZero and the M5Stack Cap CC1101 into a pocket radio tool.\n\nSub-GHz (CC1101): frequency analyzer, signal meter, Read and Read RAW captures on the 17 Flipper Zero default channels with AM270/AM650/FM238/FM476 presets, a saved-signal library, manual key entry, and Send limited to the EU licence-free bands.\n\nInfrared: learn remotes from the built-in receiver, save them and send them again.\n\nNFC (ST25R3916): read NTAG and MIFARE Ultralight tags in full, read the UID of other NFC-A cards, write saved tags to blank ones and emulate them to a reader. NFC support is new and still being tested on hardware.\n\nSignals, remotes and tags are stored as Flipper Zero .sub, .ir and .nfc files, so they can be copied between ZeroSub and a Flipper in either direction. Requires the M5Stack Cap CC1101.",
+    "summary": "Sub-GHz, infrared, NFC and IMU toolkit for the Cap CC1101, Flipper compatible",
+    "description": "ZeroSub turns the CardputerZero and the M5Stack Cap CC1101 into a pocket radio and sensor tool.\n\nSub-GHz (CC1101): frequency analyzer, signal meter, Read and Read RAW captures on the 17 Flipper Zero default channels with AM270/AM650/FM238/FM476 presets, a saved-signal library, manual key entry, and Send limited to the EU licence-free bands.\n\nInfrared: learn remotes, save them and send them again.\n\nNFC (ST25R3916): read NFC-A, NFC-B, FeliCa and NFC-V (ISO 15693) tags and show the URL or text they hold; write saved NTAG and MIFARE Ultralight tags to blank ones and emulate them to a reader. NFC support is new and still being tested on hardware.\n\nIMU: live motion readings from the BMI270 (acceleration, rotation, tilt, temperature), a compass with heading dial from the BMM150, and a bubble level.\n\nWeb Files: a small web file manager for your home folder, running while its page is open. Open the address shown on the device from a browser on the same network, log in with the PIN on screen, then browse, download, upload, rename and delete files, or install a .deb package.\n\nSignals, remotes and tags are stored as Flipper Zero .sub, .ir and .nfc files, so they can be copied between ZeroSub and a Flipper in either direction. Requires the M5Stack Cap CC1101.",
     "categories": [
       "Radio & Comms",
       "Security"
     ],
     "screenshots": [
-      "screenshot/store-1.png",
-      "screenshot/store-2.png",
-      "screenshot/store-3.png"
+      "screenshot/main-menu.png",
+      "screenshot/signal-meter.png",
+      "screenshot/nfc-tag.png"
     ],
     "icon": "assets/images/zerosub_256.png",
     "license": "MIT",
-    "source_repo": "TODO: https://github.com/<your-github-login>/ZeroSub",
+    "source_repo": "https://github.com/csaboka21/ZeroSub",
     "author": {
-      "github": "TODO-your-github-login",
-      "display_name": "TODO: Your Name"
+      "github": "csaboka21",
+      "display_name": "Csaboka"
     },
     "share_code": "ZSUB",
     "permissions": {
       "camera": false,
       "microphone": false,
-      "imu": false,
-      "network": false,
+      "imu": true,
+      "network": true,
       "additional_hardware": true,
       "background_service": false,
       "external_display": false

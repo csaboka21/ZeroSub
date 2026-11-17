@@ -50,6 +50,8 @@ struct ApplicationConfig {
     /* The BMI270 / BMM150 IMU. An empty bus searches every /dev/i2c-* node. */
     bool imu_enabled = true;
     std::string imu_i2c_device;
+    /* First TCP port the Web Files server tries; the next nine, then any free port. */
+    std::uint16_t web_port = 8080;
 };
 
 bool load_application_config(const std::string& path,

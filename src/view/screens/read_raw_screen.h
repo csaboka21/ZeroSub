@@ -10,7 +10,8 @@ namespace screen {
 
 /*
  * Records the raw pulse train on one frequency: a scrolling RSSI graph with
- * the recording threshold, the recording state, and the keys for that state.
+ * the recording threshold and the recording state. The bottom bar lists the
+ * keys for that state.
  */
 class ReadRawScreen : public BaseScreen {
 public:
@@ -32,7 +33,8 @@ private:
     lv_obj_t* threshold_line_{nullptr};
     lv_obj_t* threshold_label_{nullptr};
     lv_obj_t* state_label_{nullptr};
-    lv_obj_t* keys_label_{nullptr};
+    /* The recording state the bottom bar currently lists keys for. */
+    model::RawState shown_state_{model::RawState::Idle};
     lv_obj_t* info_label_{nullptr};
 };
 
