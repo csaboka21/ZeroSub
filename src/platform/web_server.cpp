@@ -365,7 +365,7 @@ std::string read_install_log_tail() {
 
 /*
  * Starts `apt-get install` on a local .deb, as root: directly when ZeroSub
- * runs as root (the launcher starts it through sudo), otherwise through
+ * runs as root, otherwise through
  * `sudo -n`, which fails rather than asking for a password.
  */
 bool start_install(const fs::path& deb, std::string& error) {

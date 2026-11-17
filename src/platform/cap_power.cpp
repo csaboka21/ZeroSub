@@ -50,7 +50,7 @@ bool CapPower::enable(std::string& error) {
         output.flush();
         if (!output) {
             error = std::string("Cap power: cannot enable ext_5v_out (") + std::strerror(errno) +
-                    "); run as root";
+                    "); the gpio group needs write access (see /usr/lib/tmpfiles.d/zerosub.conf)";
             return false;
         }
     }

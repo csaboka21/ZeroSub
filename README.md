@@ -220,15 +220,22 @@ Cap power and GPIO, following M5Stack's Cap-CC1101-SubG-Chat reference app:
 - GPIO15 is handled the same way for Read and Read RAW: its previous function is restored when you
   leave the page, and if it cannot be read the page reports a capture error instead of taking the pin.
 
-Permissions: the app needs access to `/dev/spidev0.1` and `/dev/gpiochip0`, and write access to the
-`ext_5v_out` brightness file when that rail is off, which normally requires root. The Debian package
-therefore installs `/etc/sudoers.d/zerosub`, which lets members of the `gpio` group run
-`/usr/bin/zerosub` as root without a password and without arguments, and the launcher entry starts the
-app through `sudo -n`. This is the same arrangement the official Cap apps use. From a shell, start it
-with `sudo zerosub`.
+Permissions: the app runs as the user the launcher starts it as; it no longer installs a sudoers
+rule, because the CardputerZero AppStore does not accept files in `/etc/sudoers.d`. It needs:
 
-Because the launcher runs the app as root, the per-user config override is written under root's home
-(`/root/.config/zerosub/zerosub.conf`).
+- `/dev/spidev0.*` and `/dev/gpiochip0`: the `spi` and `gpio` groups (the default user is in both on
+  Raspberry Pi OS).
+- Write access to `/sys/class/leds/ext_5v_out/brightness` when that rail is off. The package installs
+  `/usr/lib/tmpfiles.d/zerosub.conf`, which gives the file to the `gpio` group with mode 0664. It is
+  applied at every boot, and by the package's postinst right after installation.
+
+Loading the NFC SPI overlay at run time and installing `.deb` files from Web Files still need root:
+the app does them directly when it runs as root, otherwise through `sudo -n`, which works only if the
+user may use sudo without a password (the default user on Raspberry Pi OS can). If it cannot, add the
+overlay to `config.txt` instead (see [NFC](#nfc)).
+
+The per-user config override is written under the home of the user running the app
+(`~/.config/zerosub/zerosub.conf`).
 
 ### Read RAW
 
@@ -262,7 +269,7 @@ empty, it is chosen like this:
 
 1. `zerosub/sub-ghz` on an external SD card, if one is mounted. The first file system mounted under
    `/media`, `/run/media` or `/mnt` counts as the card; the system's own partitions never do.
-2. Otherwise `~/zerosub/sub-ghz` of the user who started the app. When the launcher starts it through `sudo`,
+2. Otherwise `~/zerosub/sub-ghz` of the user who started the app. When the app is started through `sudo`,
    that is the invoking user's home, and the files are owned by that user, not root.
 
 `zerosub` is the app's data folder, and each module gets its own folder inside it: `sub-ghz` here,
@@ -916,8 +923,8 @@ or drag and drop, streamed straight to disk), create folders, rename and delete.
 `apt-get install --reinstall --allow-downgrades` on the file as root, so
 dependencies are pulled in, an older version can be put back, and the same
 version can be reinstalled. The page shows apt's output live; the device's
-**Last** row shows *Installing...*, then the result. ZeroSub is normally started
-as root by the launcher; when it is not, `sudo -n` is used, which fails instead
+**Last** row shows *Installing...*, then the result. When ZeroSub runs as root apt is
+started directly; otherwise `sudo -n` is used, which fails instead
 of asking for a password. apt runs in its own session and logs to
 `/tmp/zerosub-install-<uid>.log` (`-0` when root), so it finishes even if ZeroSub is closed or the
 package restarts it. After updating ZeroSub itself, restart the app to run the
@@ -1308,7 +1315,7 @@ By default, the debian package is copied to '$HOME' folder, normally it's under 
 On your device, install the copied package with `apt` and replace the package file name with the one you copied:
 
 ```shell
-sudo apt install --no-install-recommends ./ZeroSub_0.18.17_rev1_arm64.deb
+sudo apt install --no-install-recommends ./ZeroSub_0.18.18_rev1_arm64.deb
 ```
 
 
@@ -1479,7 +1486,7 @@ Debian packages are produced with CPack and written to `dist/`. The package file
 Default example:
 
 ```text
-dist/ZeroSub_0.18.17_rev1_arm64.deb
+dist/ZeroSub_0.18.18_rev1_arm64.deb
 ```
 
 Package layout:
@@ -1489,10 +1496,10 @@ Package layout:
 | `/usr/bin/zerosub` | Application executable. |
 | `/etc/zerosub.conf` | System-default application settings, including the startup theme. |
 | `/usr/share/zerosub/` | Runtime assets: fonts, images, audio. |
-| `/etc/sudoers.d/zerosub` | Lets the `gpio` group start the app as root without a password. |
+| `/usr/lib/tmpfiles.d/zerosub.conf` | Gives the `gpio` group write access to the Cap's `ext_5v_out` rail control. |
 | `/usr/share/APPLaunch/applications/zerosub.desktop` | APPLaunch launcher entry. |
 | `/usr/share/APPLaunch/share/images/zerosub*.png` | APPLaunch launcher icons/fallbacks. |
-| `/usr/lib/systemd/system/zerosub.service` | Optional systemd service for embedded autostart. |
+| `/usr/lib/systemd/system/zerosub.service` | Only with `-DAPP_INSTALL_SYSTEMD_SERVICE=ON` (off by default): autostart service, runs as `APP_SERVICE_USER` (default `pi`), never root. |
 | `/usr/share/doc/zerosub/` | README and third-party asset license notes. |
 
 Build and package:

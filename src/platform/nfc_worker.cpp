@@ -892,6 +892,7 @@ constexpr const char* kOverlayDirectory = "/boot/firmware/overlays";
 constexpr const char* kOverlayName = "spi0-spidev2-gpio22-overlay";
 constexpr const char* kOverlayFile = "/boot/firmware/overlays/spi0-spidev2-gpio22-overlay.dtbo";
 constexpr const char* kDtoverlay = "/usr/bin/dtoverlay";
+constexpr const char* kSudo = "/usr/bin/sudo";
 
 /*
  * The reader sits on a third chip select of SPI0 that the stock device tree
@@ -912,18 +913,21 @@ bool ensure_spi_node(const std::string& path, const std::atomic<bool>& cancel, s
         error = path + " is missing and the system has no " + kOverlayName + " overlay";
         return false;
     }
+    /* Loading an overlay needs root: run dtoverlay directly as root, otherwise
+       through `sudo -n`, which fails instead of asking for a password. */
+    std::vector<char*> argv;
     if (::geteuid() != 0) {
-        error = path + " is missing; start the app with sudo so it can load the SPI overlay";
-        return false;
+        argv.push_back(const_cast<char*>(kSudo));
+        argv.push_back(const_cast<char*>("-n"));
+        argv.push_back(const_cast<char*>("--"));
     }
-
-    char* const argv[] = {const_cast<char*>(kDtoverlay),
-                          const_cast<char*>("-d"),
-                          const_cast<char*>(kOverlayDirectory),
-                          const_cast<char*>(kOverlayName),
-                          nullptr};
+    argv.push_back(const_cast<char*>(kDtoverlay));
+    argv.push_back(const_cast<char*>("-d"));
+    argv.push_back(const_cast<char*>(kOverlayDirectory));
+    argv.push_back(const_cast<char*>(kOverlayName));
+    argv.push_back(nullptr);
     pid_t child = -1;
-    if (::posix_spawn(&child, kDtoverlay, nullptr, nullptr, argv, environ) != 0) {
+    if (::posix_spawn(&child, argv[0], nullptr, nullptr, argv.data(), environ) != 0) {
         error = std::string("could not run dtoverlay") + hint;
         return false;
     }

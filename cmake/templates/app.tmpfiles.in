@@ -1,0 +1,3 @@
+# Lets the gpio group switch the Cap's EXT 5V rail, so @APP_DISPLAY_NAME@ can power
+# the Cap without running as root. Ignored when the rail control does not exist.
+z /sys/class/leds/ext_5v_out/brightness 0664 root gpio - -

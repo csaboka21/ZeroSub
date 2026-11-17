@@ -13,7 +13,9 @@ set(APP_DEBIAN_ARCHITECTURE "arm64" CACHE STRING "Debian package architecture")
 # still a template/M5Stack identity, so set your own name and email here.
 set(APP_MAINTAINER "Csaboka <csaboka21@users.noreply.github.com>" CACHE STRING "Debian package maintainer")
 set(APP_PACKAGE_DESCRIPTION "Sub-GHz, infrared, NFC and motion sensor tool for the CardputerZero and Cap CC1101" CACHE STRING "Debian package summary")
-set(APP_INSTALL_SYSTEMD_SERVICE ON CACHE BOOL "Install a systemd service file for embedded deployments")
+set(APP_INSTALL_SYSTEMD_SERVICE OFF CACHE BOOL "Install a systemd service file for embedded deployments")
+# The store rejects services that run as root, so the service needs a real user.
+set(APP_SERVICE_USER "pi" CACHE STRING "User the optional systemd service runs as (must not be root)")
 
 set(APP_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/package")
 configure_file(
@@ -22,17 +24,18 @@ configure_file(
     @ONLY
 )
 
-# sudoers.d ignores file names containing '.', and sudo rejects files that are
-# not mode 0440, so both the name and the permissions below matter.
+# The store does not allow /etc/sudoers.d, so the app runs as the launcher's
+# user. The only root-owned file it writes, the Cap's ext_5v_out rail control,
+# is handed to the gpio group by a tmpfiles.d rule (applied at boot, and by
+# postinst right after installation).
 configure_file(
-    "${CMAKE_CURRENT_LIST_DIR}/templates/app.sudoers.in"
-    "${APP_GENERATED_DIR}/${PROJECT_NAME}.sudoers"
+    "${CMAKE_CURRENT_LIST_DIR}/templates/app.tmpfiles.in"
+    "${APP_GENERATED_DIR}/${PROJECT_NAME}.tmpfiles"
     @ONLY
 )
-install(FILES "${APP_GENERATED_DIR}/${PROJECT_NAME}.sudoers"
-    DESTINATION "/etc/sudoers.d"
-    RENAME "${PROJECT_NAME}"
-    PERMISSIONS OWNER_READ GROUP_READ
+install(FILES "${APP_GENERATED_DIR}/${PROJECT_NAME}.tmpfiles"
+    DESTINATION "lib/tmpfiles.d"
+    RENAME "${PROJECT_NAME}.conf"
 )
 
 if(APP_INSTALL_SYSTEMD_SERVICE)
@@ -75,7 +78,7 @@ install(FILES "${APP_GENERATED_DIR}/${PROJECT_NAME}.desktop"
 
 if(APP_INSTALL_SYSTEMD_SERVICE)
     install(FILES "${APP_GENERATED_DIR}/${PROJECT_NAME}.service"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/systemd/system"
+        DESTINATION "lib/systemd/system"
     )
 endif()
 
@@ -107,7 +110,7 @@ set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${APP_DEBIAN_ARCHITECTURE}")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${APP_MAINTAINER}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(APP_DEBIAN_DEPENDS "libc6, libstdc++6, libgcc-s1, libfreetype6, libpng16-16, libjpeg62-turbo, zlib1g, sudo, raspi-utils-core")
+set(APP_DEBIAN_DEPENDS "libc6, libstdc++6, libgcc-s1, libfreetype6, libpng16-16, libjpeg62-turbo, zlib1g, raspi-utils-core")
 if(FMT_INCLUDE_DIR AND FMT_LIBRARY)
     string(APPEND APP_DEBIAN_DEPENDS ", libfmt10")
 endif()
@@ -120,6 +123,12 @@ configure_file(
     "${APP_GENERATED_DIR}/conffiles"
     @ONLY
 )
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${APP_GENERATED_DIR}/conffiles")
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/templates/postinst.in"
+    "${APP_GENERATED_DIR}/postinst"
+    @ONLY
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${APP_GENERATED_DIR}/conffiles;${APP_GENERATED_DIR}/postinst")
 
 include(CPack)

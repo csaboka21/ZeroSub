@@ -1,7 +1,7 @@
 {
   "app_name": "ZeroSub",
   "package_name": "zerosub",
-  "version": "0.18.17",
+  "version": "0.18.18",
   "description": "Sub-GHz, infrared, NFC and motion sensor tool for the CardputerZero and Cap CC1101",
   "store": {
     "summary": "Sub-GHz, infrared, NFC and IMU toolkit for the Cap CC1101, Flipper compatible",

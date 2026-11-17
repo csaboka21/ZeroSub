@@ -4,6 +4,8 @@ After=multi-user.target
 
 [Service]
 Type=simple
+User=@APP_SERVICE_USER@
+SupplementaryGroups=gpio spi i2c video input
 ExecStart=/usr/bin/@PROJECT_NAME@
 Restart=on-failure
 RestartSec=2
